@@ -67,7 +67,10 @@ int32_t main(const int32_t argc, char ** const argv)
   // Create three talkers publishing in topics A, B, and C with different publishing rates
   auto talkerA = std::make_shared<Talker>("TalkerA", "topicA", "A", 1500ms);
   auto talkerB = std::make_shared<Talker>("TalkerB", "topicB", "B", 2000ms);
+  exec.add_node(talkerB);
   auto talkerC = std::make_shared<Talker>("TalkerC", "topicC", "C", 3000ms);
+  exec.add_node(talkerC);
+  auto talker_thread = std::thread([&exec]() {exec.spin();});
 
   // Create an executor to spin the talkers in a separate thread
   rclcpp::executors::SingleThreadedExecutor exec;
