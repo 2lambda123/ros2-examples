@@ -86,8 +86,8 @@ int32_t main(const int32_t argc, char ** const argv)
       bool sub3_has_data = wait_result.get_wait_set().get_rcl_wait_set().subscriptions[2U];
 
       // topic A and B handling
-      // Note only topic B is used as a trigger condition
-      if (sub2_has_data) {
+      // Note both topic A and B are used as trigger conditions for message handling
+      if (sub1_has_data && sub2_has_data) {
         std_msgs::msg::String msg1;
         std_msgs::msg::String msg2;
         rclcpp::MessageInfo msg_info;
@@ -106,6 +106,7 @@ int32_t main(const int32_t argc, char ** const argv)
       }
 
       // topic C handling
+      // Note handling messages from topic C
       if (sub3_has_data) {
         std_msgs::msg::String msg;
         rclcpp::MessageInfo msg_info;
