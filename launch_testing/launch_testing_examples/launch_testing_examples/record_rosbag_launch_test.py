@@ -41,7 +41,7 @@ def generate_test_description():
             name='demo_node'
         ),
         launch.actions.ExecuteProcess(
-            cmd=['ros2', 'bag', 'record', '-a', '-o', rosbag_dir],
+            cmd=['ros2', 'bag', 'record', '-a', '-o', rosbag_dir, '--duration', '5'],
             output='screen'
         ),
         launch_testing.actions.ReadyToTest()
@@ -71,6 +71,18 @@ if os.name != 'nt':
                 metadata = yaml.safe_load(file)
                 assert metadata['rosbag2_bagfile_information']['message_count'] > 0
                 print('The following topics received messages:')
+        launch.actions.ExecuteProcess(
+            cmd=['ros2', 'topic', 'pub', '/chatter', 'std_msgs/msg/String', 'data: hello'],
+            output='screen'
+        ),
+        launch.actions.ExecuteProcess(
+            cmd=['ros2', 'topic', 'pub', '/chatter', 'std_msgs/msg/String', 'data: world'],
+            output='screen'
+        ),
+        launch.actions.ExecuteProcess(
+            cmd=['ros2', 'topic', 'pub', '/chatter', 'std_msgs/msg/String', 'data: goodbye'],
+            output='screen'
+        )
                 for item in metadata['rosbag2_bagfile_information']['topics_with_message_count']:
                     print(item['topic_metadata']['name'], 'recieved ', item['message_count'],
                           ' messages')
