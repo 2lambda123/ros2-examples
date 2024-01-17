@@ -19,6 +19,9 @@ import launch.actions
 import launch_testing.actions
 import launch_testing.markers
 import pytest
+import launch.actions
+import launch_testing.actions
+import pytest
 
 
 # This function specifies the processes to be run for our test
@@ -29,7 +32,7 @@ def generate_test_description():
     return launch.LaunchDescription([
         # Launch a process to test
         launch.actions.ExecuteProcess(
-            cmd=['echo', 'hello_world'],
+            cmd=['echo', 'new_command'],
             shell=True
         ),
         # Tell launch to start the test
