@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-import random
 import string
 import time
 import unittest
@@ -26,6 +25,7 @@ import launch_testing.markers
 import pytest
 import rclpy
 from rclpy.node import Node
+import secrets
 
 
 @pytest.mark.launch_test
@@ -115,7 +115,7 @@ class WaitForNodes:
 
     def _prepare_node(self):
         self.__node_name = '_test_node_' +\
-            ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+            ''.join(secrets.SystemRandom().choices(string.ascii_uppercase + string.digits, k=10))
         self.__ros_node = Node(node_name=self.__node_name, context=self.__ros_context)
 
     def wait(self):
