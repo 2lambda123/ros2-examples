@@ -31,6 +31,21 @@ import secrets
 @pytest.mark.launch_test
 @launch_testing.markers.keep_alive
 def generate_test_description():
+    """This function generates a test description for a launch file.
+    Parameters:
+        - None
+    Returns:
+        - launch.LaunchDescription: The test description for the launch file.
+        - dict: A dictionary containing the names of the nodes to be tested.
+    Processing Logic:
+        - Create an empty list for launch actions.
+        - Create an empty list for node names.
+        - For each number in the range of 3:
+            - Append a launch_ros.actions.Node object to the launch actions list with the given executable, package, and name.
+            - Append the name of the node to the node names list.
+        - Append a launch_testing.actions.ReadyToTest object to the launch actions list.
+        - Return the launch actions list and the node names dictionary."""
+    
     launch_actions = []
     node_names = []
 
@@ -104,6 +119,21 @@ class WaitForNodes:
     """
 
     def __init__(self, node_names, timeout=5.0):
+        """Initializes the class object with a list of node names and a timeout value.
+        Parameters:
+            - node_names (list): List of node names to be checked.
+            - timeout (float): Timeout value in seconds. Default is 5.0 seconds.
+        Returns:
+            - None: This function does not return any value.
+        Processing Logic:
+            - Initializes the class object.
+            - Sets the list of node names.
+            - Sets the timeout value.
+            - Initializes the ROS context.
+            - Prepares the node.
+            - Sets the expected nodes as a set.
+            - Initializes the nodes found variable."""
+        
         self.node_names = node_names
         self.timeout = timeout
         self.__ros_context = rclpy.Context()
@@ -114,11 +144,43 @@ class WaitForNodes:
         self.__nodes_found = None
 
     def _prepare_node(self):
+        """Creates a unique node name and initializes a ROS node.
+        Parameters:
+            - self (object): The object itself.
+        Returns:
+            - ros_node (Node): The initialized ROS node.
+        Processing Logic:
+            - Create unique node name.
+            - Initialize ROS node.
+            - Use secrets.SystemRandom() to generate random characters.
+            - Limit the length of the random characters to 10.
+        Example:
+            _prepare_node() # Creates a unique node name and initializes a ROS node."""
+        
         self.__node_name = '_test_node_' +\
             ''.join(secrets.SystemRandom().choices(string.ascii_uppercase + string.digits, k=10))
         self.__ros_node = Node(node_name=self.__node_name, context=self.__ros_context)
 
     def wait(self):
+        """Function to wait for nodes to become available.
+        Parameters:
+            - self (object): The object containing the function.
+            - timeout (int): The maximum time to wait for nodes to become available.
+        Returns:
+            - flag (bool): True if all nodes are found within the timeout period, False otherwise.
+        Processing Logic:
+            - Starts a timer to track the timeout period.
+            - Sets a flag to False to indicate that nodes have not been found yet.
+            - Prints a message to indicate that the function is waiting for nodes.
+            - Checks if the current time minus the start time is less than the timeout and if the flag is still False.
+            - If both conditions are met, checks if all the node names provided are in the list of current node names.
+            - If all node names are found, sets the flag to True.
+            - Waits for 0.3 seconds before checking again.
+            - Once the loop ends, sets the nodes found to a set of all current node names except for the current node.
+            - Returns the flag indicating if all nodes were found within the timeout period.
+        Example:
+            wait(self, 10)  # Waits for 10 seconds for nodes to become available."""
+        
         start = time.time()
         flag = False
         print('Waiting for nodes')
@@ -131,22 +193,77 @@ class WaitForNodes:
         return flag
 
     def shutdown(self):
+        """Shuts down the ROS node and context.
+        Parameters:
+            - self (object): The ROS node to be shut down.
+        Returns:
+            - None: No return value.
+        Processing Logic:
+            - Destroys the ROS node.
+            - Shuts down the ROS context."""
+        
         self.__ros_node.destroy_node()
         rclpy.shutdown(context=self.__ros_context)
 
     def __enter__(self):
+        """"Returns the object itself and raises a RuntimeError if all nodes are not found.
+        Parameters:
+            - self (object): The object itself.
+        Returns:
+            - object: The object itself.
+        Processing Logic:
+            - Raises RuntimeError if nodes are not found.
+            - Returns the object itself.
+            - Checks for node availability using wait() method.
+            - Uses the 'not' keyword to negate the result of wait() method.""""
+        
         if not self.wait():
             raise RuntimeError('Did not find all nodes !')
 
         return self
 
     def __exit__(self, exep_type, exep_value, trace):
+        """Closes the connection to the server.
+        Parameters:
+            - exep_type (type): The type of exception that occurred.
+            - exep_value (type): The value of the exception that occurred.
+            - trace (type): The traceback of the exception that occurred.
+        Returns:
+            - None: No return value.
+        Processing Logic:
+            - If an exception occurred, raise an Exception with the value of the exception.
+            - Call the shutdown() function.
+        Example:
+            __exit__(None, None, None) # Closes the connection to the server."""
+        
         if exep_type is not None:
             raise Exception('Exception occured, value: ', exep_value)
         self.shutdown()
 
     def get_nodes_found(self):
+        """"Returns the list of nodes found during a search."
+        Parameters:
+            - self (object): Instance of the class.
+        Returns:
+            - list: List of nodes found during the search.
+        Processing Logic:
+            - Get the list of nodes found.
+            - Returns the list.
+            - Private attribute is accessed using __.
+            - Only accessible within the class."""
+        
         return self.__nodes_found
 
     def get_nodes_not_found(self):
+        """_set
+        "Returns a set of nodes that were expected but not found in the provided data set.
+        Parameters:
+            - self (object): The current object.
+        Returns:
+            - set: A set of nodes that were expected but not found.
+        Processing Logic:
+            - Subtract expected nodes from found nodes.
+            - Return the resulting set.
+            - No error handling needed.""""
+        
         return self.__expected_nodes_set - self.__nodes_found
